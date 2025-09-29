@@ -1,4 +1,4 @@
-#FE Mobile Nuri
+# FE Mobile Nuri
 
 ## Tech Stack
 
