@@ -1,16 +1,26 @@
-# latianflutter
+#FE Mobile Nuri
 
-A new Flutter project.
+## Tech Stack
 
-## Getting Started
+Framework: Flutter (Dart)
 
-This project is a starting point for a Flutter application.
+## Installation
 
-A few resources to get you started if this is your first Flutter project:
+1. Clone the repository
+2. Install dependencies
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+    flutter pub get
+3. run app in emulator 
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+    flutter run
+
+4. run app in chrome 
+
+    flutter run -d chrome
+
+
+
+## command flutter
+
+1. flutter clean (hapus cache build)
+2. flutter analyze (lint check)
