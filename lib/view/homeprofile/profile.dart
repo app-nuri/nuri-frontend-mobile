@@ -7,6 +7,36 @@ import 'package:Sehati/view/homeprofile/updateicon.dart';
 import 'package:Sehati/view/homeprofile/home.dart';
 import 'package:Sehati/view/komunitas/index_komunitas.dart';
 import 'package:Sehati/view/shop/shop_index.dart'; 
+import 'package:provider/provider.dart';
+import 'package:Sehati/providers/auth_provider.dart';
+import 'package:Sehati/view/registerlogin/login_screen.dart';
+import 'package:Sehati/view/homeprofile/personal_data_page.dart';
+import 'package:Sehati/view/homeprofile/husband_data_page.dart';
+import 'package:Sehati/view/homeprofile/reset_password_page.dart';
+
+// Clipper gelombang bawah header (top-level)
+class _BottomWaveClipper extends CustomClipper<Path> {
+  // Wave based on 393x213 reference, scaled to actual size
+  @override
+  Path getClip(Size size) {
+    const double baseW = 393.0;
+    const double baseH = 213.0;
+    final double sx = size.width / baseW;
+    final double sy = size.height / baseH;
+
+    final Path path = Path();
+    path.moveTo(0, 0);
+    path.lineTo(0, 160 * sy);
+    path.cubicTo(98 * sx, 175 * sy, 196 * sx, 205 * sy, 196.5 * sx, 205 * sy);
+    path.cubicTo(297 * sx, 205 * sy, 345 * sx, 175 * sy, size.width, 160 * sy);
+    path.lineTo(size.width, 0);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+}
 
 class UserDataViewPage extends StatefulWidget {
   @override
@@ -157,120 +187,90 @@ class _UserDataViewPageState extends State<UserDataViewPage> {
   // Widget untuk menampilkan gambar profil user
   Widget _buildUserProfileImage() {
     final imageUrl = _userData?['selected_icon_data_cache'];
-    
-    return Container(
+    return Stack(
       alignment: Alignment.center,
-      padding: EdgeInsets.symmetric(vertical: 20.0),
+      children: [
+        Container(
+          width: 120,
+          height: 120,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 4),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x29000000),
+                spreadRadius: 2,
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: ClipOval(
+            child: imageUrl != null && imageUrl.isNotEmpty
+                ? Image.network(imageUrl, width: 120, height: 120, fit: BoxFit.cover)
+                : Image.asset('assets/images/default_user.png', width: 120, height: 120, fit: BoxFit.cover),
+          ),
+        ),
+        Positioned(
+          bottom: 0,
+          right: 0,
+          child: GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SelectProfilePage()),
+              ).then((_) => _refreshData());
+            },
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                border: Border.all(color: Color(0xFFE2E8F0)),
+                boxShadow: [
+                  BoxShadow(color: Color(0x29000000), blurRadius: 4, offset: Offset(0, 2)),
+                ],
+              ),
+              child: Icon(Icons.edit, size: 16, color: Color(0xFF1E293B)),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Header bergelombang
+  Widget _buildWaveHeader() {
+    return SizedBox(
+      width: double.infinity,
+      height: 213,
       child: Stack(
         children: [
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Color(0xFF4DBAFF),
-                width: 3,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Color(0x29000000),
-                  spreadRadius: 2,
-                  blurRadius: 8,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            child: ClipOval(
-              child: imageUrl != null && imageUrl.isNotEmpty
-                  ? Image.network(
-                      imageUrl,
-                      width: 120,
-                      height: 120,
-                      fit: BoxFit.cover,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Container(
-                          width: 120,
-                          height: 120,
-                          color: Color(0xFFF4F4F4),
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
-                                  : null,
-                              strokeWidth: 2,
-                              color: Color(0xFF4DBAFF),
-                            ),
-                          ),
-                        );
-                      },
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          width: 120,
-                          height: 120,
-                          color: Color(0xFFF4F4F4),
-                          child: Icon(
-                            Icons.person,
-                            size: 60,
-                            color: Color(0xFF4C617F),
-                          ),
-                        );
-                      },
-                    )
-                  : Container(
-                      width: 120,
-                      height: 120,
-                      color: Color(0xFFF4F4F4),
-                      child: Icon(
-                        Icons.person,
-                        size: 60,
-                        color: Color(0xFF4C617F),
-                      ),
-                    ),
+          Positioned.fill(
+            child: ClipPath(
+              clipper: _BottomWaveClipper(),
+              child: Container(color: Color(0xFFFC7286)),
             ),
           ),
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SelectProfilePage()),
-                  ).then((_) => _refreshData());
-                },
-              child: Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: Color(0xFF4DBAFF),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white,
-                    width: 2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Color(0x29000000),
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  Icons.camera_alt,
-                  color: Colors.white,
-                  size: 18,
-                ),
+          Align(
+            alignment: Alignment.topCenter,
+            child: Padding(
+              padding: EdgeInsets.only(top: 48),
+              child: Text(
+                'Data Pengguna',
+                style: TextStyle(color: Colors.black, fontSize: 24, fontWeight: FontWeight.w800),
               ),
             ),
           ),
+          Positioned(bottom: 6, left: 0, right: 0, child: Center(child: _buildUserProfileImage())),
         ],
       ),
     );
   }
+
+  // Clipper dideklarasikan di top-level (lihat atas file)
 
   // Method untuk membangun Bottom Navigation Bar
   Widget _buildBottomNavigation() {
@@ -315,7 +315,7 @@ class _UserDataViewPageState extends State<UserDataViewPage> {
       },
       backgroundColor: Colors.white,
       type: BottomNavigationBarType.fixed,
-      selectedItemColor: const Color(0xFF4DBAFF),
+      selectedItemColor: const Color(0xFFFC7286),
       unselectedItemColor: const Color(0xFF4C617F),
       selectedLabelStyle: const TextStyle(
         fontFamily: 'Poppins',
@@ -351,38 +351,18 @@ class _UserDataViewPageState extends State<UserDataViewPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF4F4F4),
-      appBar: AppBar(
-        title: Text(
-          'Data Pengguna',
-          style: TextStyle(
-            color: Color(0xFF1E293B),
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: IconThemeData(color: Color(0xFF4C617F)),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh, color: Color(0xFF4DBAFF)),
-            onPressed: _refreshData,
-            tooltip: 'Refresh Data',
-          ),
-        ],
-      ),
+      backgroundColor: Colors.white,
       body: _isLoading
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(color: Color(0xFF4DBAFF)),
+                  CircularProgressIndicator(color: Colors.pink[100]),
                   SizedBox(height: 16),
                   Text(
                     'Memuat data...',
                     style: TextStyle(
-                      color: Color(0xFF4C617F),
+                      color: Colors.pink[50],
                       fontSize: 14,
                     ),
                   ),
@@ -446,143 +426,145 @@ class _UserDataViewPageState extends State<UserDataViewPage> {
                   color: Color(0xFF4DBAFF),
                   child: SingleChildScrollView(
                     physics: AlwaysScrollableScrollPhysics(),
-                    padding: EdgeInsets.all(24.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Color(0x29000000),
-                            blurRadius: 8,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(24.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildUserProfileImage(),
-                            Divider(height: 32, color: Color(0xFFF4F4F4), thickness: 2),
-                            
-                            _buildSectionHeader('Informasi Akun'),
-                            Container(
-                              padding: EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Color(0xFFF9F9F9),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Column(
-                                children: [
-                                  _buildDataField('Nama', _userData?['name']),
-                                  _buildDataField('Email', _userData?['email']),
-                                ],
-                              ),
-                            ),
-                            
-                            _buildSectionHeader('Data Pribadi'),
-                            Container(
-                              padding: EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Color(0xFFF9F9F9),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Column(
-                                children: [
-                                  _buildDataField('Tanggal Lahir', _userData?['tanggal_lahir']),
-                                  _buildDataField('Usia', _userData?['usia']?.toString()),
-                                  _buildDataField(
-                                      'Usia Kehamilan',
-                                      _userData?['usia_kehamilan'] != null
-                                          ? '${_userData!['usia_kehamilan']} minggu'
-                                          : null),
-                                  _buildDataField('Alamat', _userData?['alamat']),
-                                  _buildDataField('Nomor Telepon', _userData?['nomor_telepon']),
-                                  _buildDataField('Pendidikan Terakhir', _userData?['pendidikan_terakhir']),
-                                  _buildDataField('Pekerjaan', _userData?['pekerjaan']),
-                                  _buildDataField('Golongan Darah', _userData?['golongan_darah']),
-                                ],
-                              ),
-                            ),
-                            
-                            _buildSectionHeader('Data Suami'),
-                            Container(
-                              padding: EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Color(0xFFF9F9F9),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Column(
-                                children: [
-                                  _buildDataField('Nama Suami', _userData?['nama_suami']),
-                                  _buildDataField('Telepon Suami', _userData?['telepon_suami']),
-                                  _buildDataField('Usia Suami', _userData?['usia_suami']?.toString()),
-                                  _buildDataField('Pekerjaan Suami', _userData?['pekerjaan_suami']),
-                                ],
-                              ),
-                            ),
-                            
-                            SizedBox(height: 24),
-                            if (_userData?['updated_at'] != null)
-                              Container(
-                                width: double.infinity,
-                                padding: EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Color(0xFFF4F4F4),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  'Terakhir diperbarui: ${_userData?['updated_at']}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF4C617F),
-                                    fontStyle: FontStyle.italic,
+                    child: Column(
+                      children: [
+                        _buildWaveHeader(),
+                        // Konten utama tanpa kartu (lebih mirip referensi)
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (_userData != null) ...[
+                                Center(
+                                  child: Text(
+                                    (_userData?['name'] ?? '-') as String,
+                                    style: TextStyle(
+                                      color: Color(0xFF111827),
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w800,
+                                    ),
                                   ),
-                                  textAlign: TextAlign.center,
                                 ),
+                                SizedBox(height: 8),
+                                Center(
+                                  child: Text(
+                                    '${_userData?['email'] ?? '-'} | ${_userData?['nomor_telepon'] ?? '-'}',
+                                    style: TextStyle(
+                                      color: Color(0xFF475569),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
+                              SizedBox(height: 12),
+                              Divider(color: Color(0xFFF1F5F9)),
+                              SizedBox(height: 12),
+                              Text('Data', style: TextStyle(color: Color(0xFF64748B), fontSize: 12, fontWeight: FontWeight.w600)),
+                              _MenuItem(
+                                icon: Icons.person_outline,
+                                title: 'Data Pribadi',
+                                onTap: () async {
+                                  final result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => PersonalDataPage(userData: _userData)),
+                                  );
+                                  if (result == true && mounted) {
+                                    await _refreshData();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Data pribadi berhasil diperbarui')),
+                                    );
+                                  }
+                                },
                               ),
-                          ],
+                              _MenuItem(
+                                icon: Icons.person_add_alt_1_outlined,
+                                title: 'Data Suami',
+                                onTap: () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => HusbandDataPage(userData: _userData)));
+                                },
+                              ),
+                              _MenuItem(
+                                icon: Icons.key_outlined,
+                                title: 'Reset Password',
+                                onTap: () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const ResetPasswordPage()));
+                                },
+                              ),
+                              Divider(color: Color(0xFFF1F5F9)),
+                              Consumer<AuthProvider>(
+                                builder: (context, authProvider, _) {
+                                  return InkWell(
+                                    onTap: () async {
+                                      final success = await authProvider.logout();
+                                      if (success && mounted) {
+                                        Navigator.of(context).pushAndRemoveUntil(
+                                          MaterialPageRoute(builder: (_) => const LoginScreen()),
+                                          (route) => false,
+                                        );
+                                      }
+                                    },
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(vertical: 16),
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.logout, color: Color(0xFFB91C1C)),
+                                          SizedBox(width: 12),
+                                          Text('Log Out', style: TextStyle(color: Color(0xFFB91C1C), fontSize: 16, fontWeight: FontWeight.w600)),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
+                        SizedBox(height: 90),
+                      ],
                     ),
                   ),
                 ),
-      floatingActionButton: _userData != null
-          ? FloatingActionButton(
-              onPressed: () async {
-                if (_userData != null && _userData!['id'] != null) {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => UserDataUpdatePage(
-                        userData: _userData!,
-                        userId: _userData!['id'].toString(),
-                      ),
-                    ),
-                  );
-                  if (result == true && mounted) {
-                    _refreshData();
-                  }
-                } else {
-                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Data pengguna tidak lengkap atau ID pengguna tidak ditemukan untuk diedit.'),
-                      backgroundColor: Color(0xFFFC5C9C),
-                    ),
-                    );
-                   }
-                }
-              },
-              child: Icon(Icons.edit, color: Colors.white),
-              backgroundColor: Color(0xFF4DBAFF),
-              tooltip: 'Edit Data Profil',
-              elevation: 4,
-            )
-          : null,
+      // Tidak ada FAB pada desain baru; edit per section di halaman tujuan
       bottomNavigationBar: _buildBottomNavigation(),
+    );
+  }
+}
+
+// Item menu standar seperti referensi
+class _MenuItem extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+  const _MenuItem({Key? key, required this.icon, required this.title, required this.onTap}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 14),
+            child: Row(
+              children: [
+                Icon(icon, color: Color(0xFF0F172A), size: 26),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(color: Color(0xFF0F172A), fontSize: 18, fontWeight: FontWeight.w600),
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: Color(0xFF94A3B8)),
+              ],
+            ),
+          ),
+        ),
+        Divider(color: Color(0xFFF1F5F9)),
+      ],
     );
   }
 }
