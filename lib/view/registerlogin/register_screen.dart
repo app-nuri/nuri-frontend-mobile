@@ -92,7 +92,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 child: ClipRRect( // Untuk memastikan gambar juga memiliki border radius
                                   borderRadius: BorderRadius.circular(20),
                                   child: Image.asset(
-                                    'assets/images/sehati_logo.png', // 
+                                    'assets/images/prenava_logo.png', // 
                                     width: 80,
                                     height: 80,
                                     fit: BoxFit.cover, // Sesuaikan sesuai kebutuhan tampilan logo
