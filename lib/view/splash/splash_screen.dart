@@ -59,6 +59,13 @@ class _SplashScreenState extends State<SplashScreen>
     
     if (mounted) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      
+      // Tunggu sampai AuthProvider selesai check authentication
+      while (!authProvider.isInitialized) {
+        await Future.delayed(const Duration(milliseconds: 100));
+        if (!mounted) return;
+      }
+      
       final prefs = await SharedPreferences.getInstance();
       final bool onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
       

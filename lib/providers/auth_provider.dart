@@ -6,11 +6,13 @@ class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
   User? _user;
   bool _isLoading = false;
+  bool _isInitialized = false; // Tambahkan flag untuk tracking initialization
   String? _error;
   User? get currentUser => _user;
   User? get user => _user;
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _user != null;
+  bool get isInitialized => _isInitialized; // Getter untuk initialization status
   String? get error => _error;
 
   AuthProvider() {
@@ -24,9 +26,16 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> _checkAuthentication() async {
-    final token = await _authService.getToken();
-    if (token != null) {
-      _user = await _authService.getUser();
+    try {
+      final token = await _authService.getToken();
+      if (token != null) {
+        _user = await _authService.getUser();
+      }
+    } catch (e) {
+      print('Error checking authentication: $e');
+      _user = null;
+    } finally {
+      _isInitialized = true; // Set flag setelah pengecekan selesai
       notifyListeners();
     }
   }

@@ -4,7 +4,8 @@ import 'package:Sehati/view/homeprofile/home.dart';
 import 'package:Sehati/view/komunitas/index_komunitas.dart';
 import 'package:Sehati/models/product_model.dart';
 import 'package:url_launcher/url_launcher.dart'; 
-import 'package:Sehati/view/homeprofile/profile.dart'; 
+import 'package:Sehati/view/homeprofile/profile.dart';
+import 'package:google_fonts/google_fonts.dart'; 
 
 class ShopPage extends StatefulWidget {
   const ShopPage({Key? key}) : super(key: key);
@@ -15,9 +16,11 @@ class ShopPage extends StatefulWidget {
 
 class _ShopPageState extends State<ShopPage> {
   Future<List<ProductModel>> _products = Future.value([]);
+  List<ProductModel> _allProducts = [];
+  List<ProductModel> _filteredProducts = [];
   bool isLoading = false;
   int _currentIndex = 2; 
-  
+  final TextEditingController _searchController = TextEditingController();
  
   final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey = 
       GlobalKey<ScaffoldMessengerState>();
@@ -39,6 +42,8 @@ class _ShopPageState extends State<ShopPage> {
       final products = await ApiServiceShop.fetchProducts();
       if (mounted) {
         setState(() {
+          _allProducts = products;
+          _filteredProducts = products;
           _products = Future.value(products);
           isLoading = false;
         });
@@ -50,6 +55,26 @@ class _ShopPageState extends State<ShopPage> {
         _products = Future.value([]);
       }
     }
+  }
+
+  void _filterProducts(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _filteredProducts = _allProducts;
+      } else {
+        _filteredProducts = _allProducts
+            .where((product) =>
+                product.produk.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+      }
+      _products = Future.value(_filteredProducts);
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   // Helper function to safely show SnackBar
@@ -103,60 +128,36 @@ class _ShopPageState extends State<ShopPage> {
         body: Column(
           children: [
            
-              // App Bar with Back Button
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Back arrow button
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.arrow_back_ios_new_rounded,
-                            color: Color(0xFF1E293B),
-                            size: 16,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const Expanded(
-                      child: Text(
-                        'Shop',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Color(0xFF1E293B),
-                          fontSize: 16,
-                          fontFamily: 'Poppins',
+              // App Bar without Back Button
+              SafeArea(
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.only(left: 24, right: 24, top: 16, bottom: 12),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Belanja',
+                        style: GoogleFonts.poppins(
+                          color: const Color(0xFFFB7D92),
+                          fontSize: 28,
                           fontWeight: FontWeight.w600,
-                          height: 1.50,
-                          letterSpacing: 0.12,
                         ),
                       ),
-                    ),
-                    // Search button
-                    
-                  ],
+                      const SizedBox(height: 4),
+                      Text(
+                        'Hari ini mau beli apa moms?',
+                        style: GoogleFonts.poppins(
+                          color: const Color(0xFFFB7D92),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               
@@ -165,134 +166,153 @@ class _ShopPageState extends State<ShopPage> {
                 child: Container(
                   width: double.infinity,
                   decoration: const BoxDecoration(
-                    color: Color(0xFFF4F4F4),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Color(0x3F000000),
-                        blurRadius: 4,
-                        offset: Offset(4, 0),
-                        spreadRadius: 0,
-                      )
-                    ],
+                    color: Colors.white,
                   ),
-                  child: Stack(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Shop Header
-                      Positioned(
-                        left: 29,
-                        top: 20,
-                        right: 29,
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: ShapeDecoration(
-                            color: const Color(0xFFF9F9F9),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            shadows: const [
-                              BoxShadow(
-                                color: Color(0x3F000000),
-                                blurRadius: 4,
-                                offset: Offset(0, 2),
-                                spreadRadius: 0,
-                              )
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                "Produk Kesehatan Terpercaya",
-                                style: TextStyle(
-                                  color: Color(0xFF1E293B),
-                                  fontSize: 14,
-                                  fontFamily: 'Poppins',
-                                  fontWeight: FontWeight.w500,
+                      // Shop Header with Search
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Search Bar - Functional
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(30),
+                                border: Border.all(
+                                  color: const Color(0xFFE0E0E0),
+                                  width: 1,
                                 ),
                               ),
-                            ],
-                          ),
+                              child: TextField(
+                                controller: _searchController,
+                                onChanged: _filterProducts,
+                                decoration: InputDecoration(
+                                  hintText: "Search products...",
+                                  hintStyle: GoogleFonts.poppins(
+                                    color: const Color(0xFFBDBDBD),
+                                    fontSize: 14,
+                                  ),
+                                  prefixIcon: const Icon(
+                                    Icons.search,
+                                    color: Color(0xFFBDBDBD),
+                                    size: 20,
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
+                                ),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  color: const Color(0xFF1E293B),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      // Category Tabs
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                        child: Row(
+                          children: [
+                            _buildCategoryChip("All", true),
+                            const SizedBox(width: 8),
+                            _buildCategoryChip("Vitamin", false),
+                            const SizedBox(width: 8),
+                            _buildCategoryChip("Makanan", false),
+                            const SizedBox(width: 8),
+                            _buildCategoryChip("Peralatan Bayi", false),
+                          ],
                         ),
                       ),
                       
                       // Products Grid
-                      Positioned(
-                        left: 20,
-                        top: 90,
-                        right: 20,
-                        bottom: 20,
-                        child: RefreshIndicator(
-                          onRefresh: () async {
-                            await _loadProducts();
-                          },
-                          color: const Color(0xFF4DBAFF),
-                          child: FutureBuilder<List<ProductModel>>(
-                            future: _products,
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                return const Center(
-                                  child: CircularProgressIndicator(color: Color(0xFF4DBAFF)),
-                                );
-                              } else if (snapshot.hasError) {
-                                return Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Icon(Icons.error, color: Color(0xFFFC5C9C), size: 64),
-                                      const SizedBox(height: 16),
-                                      Text(
-                                        "Error: ${snapshot.error}",
-                                        style: const TextStyle(
-                                          color: Color(0xFF1E293B),
-                                          fontFamily: 'Poppins',
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: _loadProducts,
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(0xFF4DBAFF),
-                                        ),
-                                        child: const Text('Refresh'),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                                return Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Icon(Icons.shopping_bag, color: Color(0xFF4DBAFF), size: 64),
-                                      const SizedBox(height: 16),
-                                      const Text(
-                                        "Belum ada produk",
-                                        style: TextStyle(
-                                          color: Color(0xFF1E293B),
-                                          fontFamily: 'Poppins',
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }
-                              
-                              final products = snapshot.data!;
-                              return GridView.builder(
-                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  childAspectRatio: 0.75,
-                                  crossAxisSpacing: 16,
-                                  mainAxisSpacing: 16,
-                                ),
-                                itemCount: products.length,
-                                itemBuilder: (context, index) {
-                                  return _buildProductCard(products[index]);
-                                },
-                              );
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: RefreshIndicator(
+                            onRefresh: () async {
+                              await _loadProducts();
                             },
+                            color: const Color(0xFFFB7D92),
+                            child: FutureBuilder<List<ProductModel>>(
+                              future: _products,
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return const Center(
+                                    child: CircularProgressIndicator(color: Color(0xFFFB7D92)),
+                                  );
+                                } else if (snapshot.hasError) {
+                                  return Center(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(Icons.error, color: Color(0xFFFB7D92), size: 64),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          "Error: ${snapshot.error}",
+                                          style: GoogleFonts.poppins(
+                                            color: const Color(0xFF1E293B),
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        ElevatedButton(
+                                          onPressed: _loadProducts,
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: const Color(0xFFFB7D92),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                          ),
+                                          child: const Text('Refresh'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                                  return Center(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(Icons.shopping_bag, color: Color(0xFFFB7D92), size: 64),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          "Belum ada produk",
+                                          style: GoogleFonts.poppins(
+                                            color: const Color(0xFF1E293B),
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+                                
+                                final products = snapshot.data!;
+                                return GridView.builder(
+                                  padding: const EdgeInsets.only(top: 16, bottom: 20),
+                                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 3,
+                                    childAspectRatio: 0.65, // Lebih panjang (dari 0.75 ke 0.65)
+                                    crossAxisSpacing: 12,
+                                    mainAxisSpacing: 16,
+                                  ),
+                                  itemCount: products.length,
+                                  itemBuilder: (context, index) {
+                                    return _buildProductCard(products[index]);
+                                  },
+                                );
+                              },
+                            ),
                           ),
                         ),
                       ),
@@ -303,6 +323,28 @@ class _ShopPageState extends State<ShopPage> {
             ],
           ),
           bottomNavigationBar: _buildBottomNavigation(),
+        ),
+      );
+    }
+
+    Widget _buildCategoryChip(String label, bool isSelected) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFFB7D92) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? const Color(0xFFFB7D92) : const Color(0xFFE0E0E0),
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.poppins(
+            color: isSelected ? Colors.white : const Color(0xFF757575),
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+          ),
         ),
       );
     }
@@ -333,7 +375,7 @@ class _ShopPageState extends State<ShopPage> {
         },
         backgroundColor: Colors.white,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFF4DBAFF),
+        selectedItemColor: const Color(0xFFFB7D92),
         unselectedItemColor: const Color(0xFF4C617F),
         selectedLabelStyle: const TextStyle(
           fontFamily: 'Poppins',
@@ -356,106 +398,98 @@ class _ShopPageState extends State<ShopPage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_bag),
-            label: 'Shop',
+            label: 'Belanja',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
-            label: 'Profil',
+            label: 'Akun Saya',
           ),
         ],
       );
     }
 
     Widget _buildProductCard(ProductModel product) {
-      return GestureDetector(
-        onTap: () {
-          _showProductDetail(product);
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(
+            color: const Color(0xFFE0E0E0),
+            width: 1,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Product Image
-              Expanded(
-                flex: 3,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+              spreadRadius: 0,
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Product Image Container
+            Expanded(
+              flex: 5,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                 child: Container(
                   width: double.infinity,
-                  decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                    child: _buildProductImage(product.gambar),
-                  ),
+                  color: Colors.white,
+                  child: _buildProductImage(product.gambar),
                 ),
               ),
-              
-              // Product Info
-              Expanded(
-                flex: 2,
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Product Name
-                      Text(
-                        product.produk,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Poppins',
-                          color: Color(0xFF1E293B),
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      
-                      const SizedBox(height: 4),
-                      
-                      // Product Description
-                      Expanded(
-                        child: Text(
-                          product.deskripsi,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontFamily: 'Poppins',
-                            color: Color(0xFF64748B),
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 8),
-                      
-                      // Price
-                      Text(
-                        _formatPrice(product.harga),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          fontFamily: 'Poppins',
-                          color: Color(0xFF4DBAFF),
-                        ),
-                      ),
-                    ],
+            ),
+            
+            // Content Padding
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Product Name
+                  Text(
+                    product.produk,
+                    style: GoogleFonts.poppins(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF1E293B),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.left,
                   ),
-                ),
+                  
+                  const SizedBox(height: 6),
+                  
+                  // Button "Lihat" - Align Left
+                  ElevatedButton(
+                    onPressed: () {
+                      _showProductDetail(product);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFB7D92),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                      elevation: 0,
+                      minimumSize: const Size(0, 28),
+                    ),
+                    child: Text(
+                      'Lihat',
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     }
@@ -483,7 +517,7 @@ class _ShopPageState extends State<ShopPage> {
             color: const Color(0xFFF4F4F4),
             child: Center(
               child: CircularProgressIndicator(
-                color: const Color(0xFF4DBAFF),
+                color: const Color(0xFFFB7D92),
                 value: loadingProgress.expectedTotalBytes != null
                     ? loadingProgress.cumulativeBytesLoaded / 
                       loadingProgress.expectedTotalBytes!
@@ -553,11 +587,10 @@ class _ShopPageState extends State<ShopPage> {
                         
                         Text(
                           _formatPrice(product.harga),
-                          style: const TextStyle(
+                          style: GoogleFonts.poppins(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
-                            fontFamily: 'Poppins',
-                            color: Color(0xFF4DBAFF),
+                            color: const Color(0xFFFB7D92),
                           ),
                         ),
                         
@@ -596,7 +629,7 @@ class _ShopPageState extends State<ShopPage> {
                                   _launchURL(product.link); // Mengarahkan ke link produk
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF4DBAFF),
+                                  backgroundColor: const Color(0xFFFB7D92),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
@@ -604,17 +637,16 @@ class _ShopPageState extends State<ShopPage> {
                                 ),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
-                                  children: const [
-                                    Icon(
+                                  children: [
+                                    const Icon(
                                       Icons.open_in_new,
                                       color: Colors.white,
                                       size: 18,
                                     ),
-                                    SizedBox(width: 8),
+                                    const SizedBox(width: 8),
                                     Text(
                                       'Beli Sekarang',
-                                      style: TextStyle(
-                                        fontFamily: 'Poppins',
+                                      style: GoogleFonts.poppins(
                                         fontWeight: FontWeight.w600,
                                         color: Colors.white,
                                       ),
@@ -638,16 +670,15 @@ class _ShopPageState extends State<ShopPage> {
                                 style: TextButton.styleFrom(
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    side: const BorderSide(color: Color(0xFF4DBAFF)),
+                                    side: const BorderSide(color: Color(0xFFFB7D92)),
                                   ),
                                   padding: const EdgeInsets.symmetric(vertical: 12),
                                 ),
-                                child: const Text(
+                                child: Text(
                                   'Tutup',
-                                  style: TextStyle(
-                                    fontFamily: 'Poppins',
+                                  style: GoogleFonts.poppins(
                                     fontWeight: FontWeight.w600,
-                                    color: Color(0xFF4DBAFF),
+                                    color: const Color(0xFFFB7D92),
                                   ),
                                 ),
                               ),
