@@ -1,4 +1,4 @@
-# FE Mobile Nuri
+# FE Mobile Prenava
 
 ## Tech Stack
 
