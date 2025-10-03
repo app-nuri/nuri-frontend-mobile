@@ -1,4 +1,4 @@
-# FE Mobile Prenava
+# FE Mobile Prenava 
 
 ## Tech Stack
 
@@ -24,3 +24,6 @@ Framework: Flutter (Dart)
 
 1. flutter clean (hapus cache build)
 2. flutter analyze (lint check)
+
+
+p
